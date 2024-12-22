@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Pi-Hole - titzko</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .code-block {
+            position: relative;
+            background-color: #1a1a1a;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.5rem;
+            background-color: #2d2d2d;
+            border: none;
+            border-radius: 0.375rem;
+            color: #9ca3af;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .copy-button:hover {
+            background-color: #3d3d3d;
+        }
+
+        .copy-button svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .copy-button.copied {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: rgb(34, 197, 94);
+        }
+
+        .copy-icon,
+        .check-icon {
+            transition: all 0.2s;
+        }
+
+        .check-icon {
+            display: none;
+        }
+
+        .copied .copy-icon {
+            display: none;
+        }
+
+        .copied .check-icon {
+            display: block;
+        }
+
+        pre {
+            margin: 0;
+            padding-left: 1rem;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body class="bg-[#0D1117] text-gray-100 min-h-screen">
+    <nav class="bg-[#1E2430] py-4 shadow-md">
+        <div class="container mx-auto px-6">
+            <a href="/" class="text-xl font-semibold text-indigo-400">titzko</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-8 max-w-4xl">
+        <article class="prose prose-invert lg:prose-xl">
+            <header class="mb-8">
+                <h1 class="text-4xl font-bold mb-4">Setup Pi-Hole for Your Home Network</h1>
+                <div class="flex items-center text-gray-400 text-sm">
+                    <time datetime="2024-12-22">December 22, 2024</time>
+                    <span class="mx-2">•</span>
+                    <span>5 min read</span>
+                </div>
+            </header>
+
+            <!-- Table of Contents -->
+            <nav class="bg-[#1E2430] p-4 rounded-lg mb-8">
+                <h2 class="text-2xl font-semibold mb-4">Table of Contents</h2>
+                <ul class="list-disc list-inside text-gray-300">
+                    <li><a href="#what-is-pi-hole" class="text-indigo-400 hover:underline">What is Pi-Hole?</a></li>
+                    <li><a href="#advantages-of-pi-hole" class="text-indigo-400 hover:underline">Advantages of
+                            Pi-Hole</a></li>
+                    <li><a href="#prerequisites" class="text-indigo-400 hover:underline">Prerequisites</a></li>
+                    <li><a href="#step-1-setup-your-raspberry-pi" class="text-indigo-400 hover:underline">Step 1: Setup
+                            Your Raspberry Pi</a></li>
+                    <li><a href="#setting-up-pi-hole" class="text-indigo-400 hover:underline">Setting Up Pi-Hole</a>
+                    </li>
+                    <li><a href="#adding-more-blocklists" class="text-indigo-400 hover:underline">Adding More
+                            Blocklists</a></li>
+                    <li><a href="#router-configuration" class="text-indigo-400 hover:underline">Router Configuration</a>
+                    </li>
+
+                </ul>
+            </nav>
+            <!-- End of Table of Contents -->
+
+            <div class="space-y-6">
+                <h2 id="what-is-pi-hole" class="text-2xl font-bold text-gray-100 mt-8 mb-4">What is Pi-Hole?</h2>
+                <p class="text-gray-300">
+                    Pi-hole is a powerful network-wide ad blocker that acts as a DNS sinkhole for your entire network.
+                    Unlike traditional browser-based ad blockers that work on a single device, Pi-hole operates at your
+                    network level, providing protection for all connected devices.
+                </p>
+
+                <h2 id="advantages-of-pi-hole" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Advantages of Pi-Hole
+                </h2>
+                <ul class="list-disc list-inside text-gray-300">
+                    <li>Works for all your devices in the network with a single central setup.</li>
+                    <li>Blocks tracking domains using open-source, maintained, and constantly updated blacklists.</li>
+                    <li>Fully configurable blacklists and whitelists.</li>
+                    <li>Provides insights into your network traffic.</li>
+                    <li>Serves as a productivity tool by blocking time-wasting domains like TikTok, Twitch, or YouTube.
+                    </li>
+                    <li>Easy to set up and maintain.</li>
+                </ul>
+
+                <h2 id="prerequisites" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Prerequisites</h2>
+                <ul class="list-disc list-inside text-gray-300">
+                    <li>Raspberry Pi</li>
+                    <li>Router of your choice</li>
+                    <li>Micro SD Card</li>
+                    <li>About 1-2 hours of time</li>
+                </ul>
+
+                <h2 id="step-1-setup-your-raspberry-pi" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Step 1: Setup
+                    Your Raspberry Pi</h2>
+                <p class="text-gray-300">
+                    First, you need to prepare your Raspberry Pi. Install <a class="font-bold text-indigo-400"
+                        href="https://www.raspberrypi.com/software/">Raspberry Pi OS</a> on your Pi using the Raspberry
+                    Pi Imager. This tool allows you to install Raspberry Pi OS on a micro SD card. On some Linux
+                    distributions like Mint, Pi Imager is already preinstalled. If Pi Imager is not installed, you can
+                    download it for free from the official website <a class="font-bold text-indigo-400"
+                        href="https://www.raspberrypi.com/software/">here</a>.
+                </p>
+                <img src="img/piImager.png" alt="Pi Imager Interface" class="my-4 rounded-lg">
+
+                <p class="text-gray-300">
+                    With Pi Imager ready, select your Raspberry Pi model (e.g., Raspberry Pi 4 Model B), the OS of your
+                    choice, and the SD card. Follow the steps of the wizard. For the Operating System, I recommend using
+                    Pi-OS as it is optimized for running on the Raspberry Pi. However, you can also choose an OS without
+                    a desktop and terminal-only if preferred.
+                </p>
+
+                <p class="text-gray-300">
+                    Once you have set up your micro SD card, insert it into your Pi and power it on. Follow the
+                    installation wizard that appears on the first boot. After completing the initial setup, open a
+                    terminal to install Docker. Docker is a lightweight virtualization tool that allows us to run the
+                    Pi-Hole application in a container without worrying about external dependencies.
+                </p>
+
+                <p class="text-gray-300">
+                    The easiest way to install Docker is by following the documentation from the official <a
+                        class="font-bold text-indigo-400" href="https://github.com/docker/docker-install">Docker Install
+                        Repository</a>. Run the following two commands in your terminal. The first command downloads a
+                    shell script, and the second executes it:
+                </p>
+
+                <!-- Standardized Code Block: Install Docker -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-bash">curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh</code></pre>
+                </div>
+
+                <p class="text-gray-300">You can test if Docker is installed successfully by running:</p>
+
+                <!-- Standardized Code Block: Test Docker Installation -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-bash">docker run hello-world</code></pre>
+                </div>
+
+                <p class="text-gray-300">You should see an output similar to this:</p>
+                <img src="img/helloWorldOutput.png" alt="Docker Hello World Output" class="my-4 rounded-lg">
+
+                <h2 id="setting-up-pi-hole" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Setting Up Pi-Hole</h2>
+                <p class="text-gray-300">
+                    After Docker is installed, we're ready to set up Pi-Hole. First, create a Pi-Hole directory and
+                    subdirectories for our configurations, which will be persistent. Also, create a
+                    <code>docker-compose.yml</code>
+                    file, which will serve as the blueprint for Pi-Hole.
+                </p>
+
+                <!-- Standardized Code Block: Create Pi-Hole Directories and docker-compose.yml -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-bash">mkdir -p ~/pihole/etc-dnsmasq.d
+mkdir -p ~/pihole/etc-pihole
+touch ~/pihole/docker-compose.yml</code></pre>
+                </div>
+
+                <p class="text-gray-300">After these steps, your Pi-Hole directory should look like this:</p>
+                <img src="/img/pihole-dir.png" alt="Pi-Hole Directory Structure" class="my-4 rounded-lg">
+
+                <p class="text-gray-300">
+                    Next, modify the <code>docker-compose.yml</code> file. Open it with:
+                </p>
+
+                <!-- Standardized Code Block: Modify docker-compose.yml -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-yaml">version: "3"
+
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    environment:
+      TZ: 'Europe/Berlin'
+      WEBPASSWORD: 'YourPassword'
+      DNS1: 1.1.1.1
+      DNS2: 1.0.0.1
+    volumes:
+      - ./etc-pihole:/etc/pihole
+      - ./etc-dnsmasq.d:/etc/dnsmasq.d
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - pihole_network
+
+networks:
+  pihole_network:
+    driver: bridge</code></pre>
+                </div>
+
+                <p class="text-gray-300">
+                    Replace <code>'YourPassword'</code> with your desired password and <code>'Europe/Berlin'</code> with
+                    your actual timezone.
+                    Now, start Pi-Hole by running:
+                </p>
+
+                <!-- Standardized Code Block: Start Pi-Hole -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-bash">cd ~/pihole
+docker-compose up -d</code></pre>
+                </div>
+
+                <p class="text-gray-300">
+                    Congratulations! You have successfully set up Pi-Hole. However, there are a few more steps to ensure
+                    everything works correctly. First, verify that Pi-Hole is running correctly by finding your Pi's IP
+                    address in your home network. In your terminal, run:
+                </p>
+
+                <!-- Standardized Code Block: Find Pi's IP Address -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-bash">hostname -I</code></pre>
+                </div>
+
+                <p class="text-gray-300">
+                    You should see an output similar to this:
+                </p>
+                <img src="img/networkIpAddress.png" alt="Network IP Address" class="my-4 rounded-lg">
+                <p class="text-gray-300">
+                    The first number (e.g., <code>192.168.178.32</code>) is the IP address of your Pi in your home
+                    network. If
+                    everything is set up correctly, you can access the Pi-Hole dashboard via
+                    <code>http://192.168.178.32/admin</code> (replace <code>192.168.178.32</code> with your actual IP
+                    address). Enter the
+                    password you set in your <code>docker-compose.yml</code> to access Pi-Hole.
+                </p>
+                <img src="img/pihole.png" alt="Pi-Hole Dashboard" class="my-4 rounded-lg">
+
+
+                <h2 id="adding-more-blocklists" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Adding More
+                    Blocklists</h2>
+                <p class="text-gray-300">
+                    While Pi-Hole comes with default blocklists, adding more can enhance its ad-blocking and privacy
+                    capabilities. Here are some recommended blocklists to consider:
+                </p>
+                <ul class="list-disc list-inside text-gray-300 mb-4">
+                    <li><strong>StevenBlack's Unified Hosts:</strong> Combines multiple reputable sources into a single,
+                        unified blocklist. <a href="https://github.com/StevenBlack/hosts"
+                            class="text-indigo-400 underline" target="_blank">GitHub Repository</a></li>
+                    <li><strong>ETC Hosts:</strong> Focuses on blocking ads and trackers with minimal impact on browsing
+                        performance. <a href="https://someonewhocares.org/hosts/" class="text-indigo-400 underline"
+                            target="_blank">ETC Hosts</a></li>
+                    <li><strong>AdGuard DNS:</strong> Comprehensive lists for blocking ads, trackers, phishing sites,
+                        and more. <a href="https://adguard.com/en/filtering/filtering-faq.html"
+                            class="text-indigo-400 underline" target="_blank">AdGuard Filtering</a></li>
+                    <li><strong>Disconnect.me:</strong> Provides blocklists targeting tracking, malware, and unwanted
+                        content. <a href="https://disconnect.me/" class="text-indigo-400 underline"
+                            target="_blank">Disconnect.me</a></li>
+                    <li><strong>Malware Domain List:</strong> Specifically blocks domains known to distribute malware.
+                        <a href="http://www.malwaredomainlist.com/" class="text-indigo-400 underline"
+                            target="_blank">Malware Domain List</a>
+                    </li>
+                </ul>
+
+                <p class="text-gray-300">
+                    To add these blocklists to your Pi-Hole setup, follow these steps:
+                </p>
+                <ol class="list-decimal list-inside text-gray-300 mb-4">
+                    <li>Log in to the Pi-Hole dashboard.</li>
+                    <li>Navigate to <strong>Group Management</strong> &gt; <strong>Adlists</strong>.</li>
+                    <li>Click on the <strong>Add</strong> button.</li>
+                    <li>Enter the URL of the desired blocklist.</li>
+                    <li>Provide a description for the blocklist (optional).</li>
+                    <li>Click <strong>Add</strong> to include the blocklist.</li>
+                    <li>After adding all desired blocklists, click <strong>Update Gravity</strong> to apply the changes.
+                    </li>
+                </ol>
+
+                <h2 id="router-configuration" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Router Configuration
+                </h2>
+                <p class="text-gray-300">
+                    To ensure that Pi-Hole functions correctly across your network, it's crucial to assign your
+                    Raspberry Pi a static IP address outside of your router's DHCP range. This prevents IP address
+                    conflicts and ensures that your Pi-Hole remains consistently reachable by all devices on your
+                    network. Additionally, configuring your router to use Pi-Hole as the primary DNS server directs all
+                    DNS queries through Pi-Hole for effective ad blocking and tracking prevention.
+                </p>
+
+                <h3 class="text-xl font-semibold text-gray-100 mt-6 mb-2">Step 1: Check Your Router's DHCP Range</h3>
+                <p class="text-gray-300">
+                    Before assigning a static IP to your Raspberry Pi, you need to determine the DHCP range configured
+                    on your router. This range defines the pool of IP addresses that your router can assign to devices
+                    automatically. By selecting a static IP outside this range, you avoid potential conflicts where both
+                    the router and the Pi attempt to assign the same IP to different devices.
+                </p>
+                <p class="text-gray-300">
+                    To check the DHCP range on a Fritz!Box 7530:
+                </p>
+                <ol class="list-decimal list-inside text-gray-300 mb-4">
+                    <li>Log in to your Fritz!Box interface by navigating to <code>http://fritz.box</code> in your web
+                        browser.</li>
+                    <li>Enter your Fritz!Box password when prompted.</li>
+                    <li>Navigate to <strong>Home Network</strong> &gt; <strong>Network Overview</strong>.</li>
+                    <li>Click on <strong>Network Settings</strong> or a similar option to view DHCP settings.</li>
+                    <li>Note the starting and ending IP addresses of the DHCP pool. For example, your DHCP range might
+                        be from <code>192.168.178.20</code> to <code>192.168.178.200</code>.</li>
+                </ol>
+                <img src="img/dhcpRange.png" alt="DHCP Range Settings on Fritz!Box" class="my-4 rounded-lg">
+
+                <h3 class="text-xl font-semibold text-gray-100 mt-6 mb-2">Step 2: Assign a Static IP to Your Raspberry
+                    Pi</h3>
+                <p class="text-gray-300">
+                    With the DHCP range identified, choose an IP address for your Raspberry Pi that falls outside this
+                    range. For example, if your DHCP pool is from <code>192.168.178.20</code> to
+                    <code>192.168.178.200</code>, you might select <code>192.168.178.2</code> for your Pi.
+                </p>
+                <p class="text-gray-300">
+                    On your Raspberry Pi, follow these steps to set a static IP address by editing the
+                    <code>/etc/dhcpcd.conf</code> file:
+                </p>
+
+                <h4 class="text-lg font-semibold text-gray-100 mt-4 mb-2">a. Open the DHCP Client Configuration File
+                </h4>
+                <p class="text-gray-300">
+                    Open the <code>dhcpcd.conf</code> file with sudo privileges:
+                </p>
+                <!-- Code Block: Open dhcpcd.conf -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-bash">sudo nano /etc/dhcpcd.conf</code></pre>
+                </div>
+
+                <h4 class="text-lg font-semibold text-gray-100 mt-6 mb-2">b. Configure Static IP Settings</h4>
+                <p class="text-gray-300">
+                    In the opened <code>dhcpcd.conf</code> file, add the following lines.
+                    Replace <code>wlan0</code> with <code>eth0</code> if you're using a wired connection:
+                </p>
+                <!-- Code Block: Static IP Configuration -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-bash">interface wlan0
+static ip_address=192.168.178.2/24
+static routers=192.168.178.1
+static domain_name_servers=1.1.1.1</code></pre>
+                </div>
+
+                <ul class="list-disc list-inside text-gray-300">
+                    <li><strong>interface wlan0:</strong> Specifies the network interface to configure. Use
+                        <code>wlan0</code> for wireless or <code>eth0</code> for wired connections.</li>
+                    <li><strong>static ip_address=192.168.178.2/24:</strong> Assigns the static IP address
+                        <code>192.168.178.2</code> with a subnet mask of <code>255.255.255.0</code> (<code>/24</code> in
+                        CIDR notation) to your Raspberry Pi.</li>
+                    <li><strong>static routers=192.168.178.1:</strong> Sets the default gateway to
+                        <code>192.168.178.1</code>, typically your router's IP address.</li>
+                    <li><strong>static domain_name_servers=1.1.1.1:</strong> Configures the DNS server to
+                        <code>1.1.1.1</code> (Cloudflare's public DNS) for name resolution.</li>
+                </ul>
+
+
+                <p class="text-gray-300">
+                    To apply the changes, reboot your Raspberry Pi with the following command:
+                </p>
+                <!-- Code Block: Reboot Command -->
+                <div class="code-block">
+                    <button class="copy-button" onclick="copyCode(this)" aria-label="Copy code">
+                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </button>
+                    <pre><code class="language-bash">sudo reboot</code></pre>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-100 mt-6 mb-2">Step 3: Configure Your Router to Use Pi-Hole
+                    as the DNS Server</h3>
+                <p class="text-gray-300">
+                    After setting a static IP on your Raspberry Pi, you need to configure your router to use this IP as
+                    the primary DNS server. This ensures that all DNS queries from devices on your network pass through
+                    Pi-Hole for ad blocking and tracking prevention.
+                </p>
+                <p class="text-gray-300">
+                    Follow these steps in your Fritz!Box 7530 interface:
+                </p>
+                <ol class="list-decimal list-inside text-gray-300 mb-4">
+                    <li>Log in to your Fritz!Box interface by navigating to <code>http://fritz.box</code> in your web
+                        browser.</li>
+                    <li>Enter your Fritz!Box password when prompted.</li>
+                    <li>Navigate to <strong>Internet</strong> &gt; <strong>Account Information</strong>.</li>
+                    <li>Click on the <strong>DNS Server</strong> tab.</li>
+                    <li>Select <strong>Use other DNSv4 servers</strong>.</li>
+                    <li>Enter your Pi's static IP address (e.g., <code>192.168.178.2</code>) as the primary DNS server.
+                    </li>
+                    <li>Add <code>1.1.1.1</code> as the fallback DNS server (Cloudflare's public DNS).</li>
+                    <li>Click <strong>Save</strong> to apply the changes.</li>
+                </ol>
+                <img src="img/routerDNSSettings.png" alt="Router DNS Settings" class="my-4 rounded-lg">
+                <p>And thats already it. Note that you should probably setup a firewall and ssh-connection for your pi.</p>
+
+
+            </div>
+        </article>
+    </main>
+
+    <footer class="bg-gray-800 py-6 mt-12">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <p>© 2024 Matthias. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Include Prism.js and its Plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <!-- Include Prism.js Copy to Clipboard Plugin (Optional) -->
+    <!-- Since we are handling copy manually, no need to include the plugin -->
+
+    <script>
+        function copyCode(button) {
+            const code = button.nextElementSibling.innerText.trim();
+            navigator.clipboard.writeText(code).then(() => {
+                // Add the 'copied' class to change button appearance
+                button.classList.add('copied');
+                // Remove the 'copied' class after 2 seconds
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+    </script>
+</body>
+
+</html>
