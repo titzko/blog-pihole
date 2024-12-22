@@ -103,9 +103,9 @@
                     <li><a href="#advantages-of-pi-hole" class="text-indigo-400 hover:underline">Advantages of
                             Pi-Hole</a></li>
                     <li><a href="#prerequisites" class="text-indigo-400 hover:underline">Prerequisites</a></li>
-                    <li><a href="#step-1-setup-your-raspberry-pi" class="text-indigo-400 hover:underline">Step 1: Setup
+                    <li><a href="#setup-your-raspberry-pi" class="text-indigo-400 hover:underline">Setup
                             Your Raspberry Pi</a></li>
-                    <li><a href="#setting-up-pi-hole" class="text-indigo-400 hover:underline">Setting Up Pi-Hole</a>
+                    <li><a href="#setting-up-pi-hole" class="text-indigo-400 hover:underline">Setup Pi-Hole</a>
                     </li>
                     <li><a href="#adding-more-blocklists" class="text-indigo-400 hover:underline">Adding More
                             Blocklists</a></li>
@@ -144,7 +144,7 @@
                     <li>About 1-2 hours of time</li>
                 </ul>
 
-                <h2 id="step-1-setup-your-raspberry-pi" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Step 1: Setup
+                <h2 id="setup-your-raspberry-pi" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Setup
                     Your Raspberry Pi</h2>
                 <p class="text-gray-300">
                     First, you need to prepare your Raspberry Pi. Install <a class="font-bold text-indigo-400"
@@ -215,7 +215,7 @@ sh get-docker.sh</code></pre>
                 <p class="text-gray-300">You should see an output similar to this:</p>
                 <img src="img/helloWorldOutput.png" alt="Docker Hello World Output" class="my-4 rounded-lg">
 
-                <h2 id="setting-up-pi-hole" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Setting Up Pi-Hole</h2>
+                <h2 id="setting-up-pi-hole" class="text-2xl font-bold text-gray-100 mt-8 mb-4">Setup Pi-Hole</h2>
                 <p class="text-gray-300">
                     After Docker is installed, we're ready to set up Pi-Hole. First, create a Pi-Hole directory and
                     subdirectories for our configurations, which will be persistent. Also, create a
@@ -400,7 +400,7 @@ docker-compose up -d</code></pre>
                     DNS queries through Pi-Hole for effective ad blocking and tracking prevention.
                 </p>
 
-                <h3 class="text-xl font-semibold text-gray-100 mt-6 mb-2">Step 1: Check Your Router's DHCP Range</h3>
+                <h3 class="text-large font-semibold text-gray-100 mt-6 mb-2">Step 1: Check Your Router's DHCP Range</h3>
                 <p class="text-gray-300">
                     Before assigning a static IP to your Raspberry Pi, you need to determine the DHCP range configured
                     on your router. This range defines the pool of IP addresses that your router can assign to devices
@@ -421,7 +421,7 @@ docker-compose up -d</code></pre>
                 </ol>
                 <img src="img/dhcpRange.png" alt="DHCP Range Settings on Fritz!Box" class="my-4 rounded-lg">
 
-                <h3 class="text-xl font-semibold text-gray-100 mt-6 mb-2">Step 2: Assign a Static IP to Your Raspberry
+                <h3 class="text-large font-semibold text-gray-100 mt-6 mb-2">Step 2: Assign a Static IP to Your Raspberry
                     Pi</h3>
                 <p class="text-gray-300">
                     With the DHCP range identified, choose an IP address for your Raspberry Pi that falls outside this
@@ -433,8 +433,7 @@ docker-compose up -d</code></pre>
                     <code>/etc/dhcpcd.conf</code> file:
                 </p>
 
-                <h4 class="text-lg font-semibold text-gray-100 mt-4 mb-2">a. Open the DHCP Client Configuration File
-                </h4>
+            
                 <p class="text-gray-300">
                     Open the <code>dhcpcd.conf</code> file with sudo privileges:
                 </p>
@@ -454,7 +453,6 @@ docker-compose up -d</code></pre>
                     <pre><code class="language-bash">sudo nano /etc/dhcpcd.conf</code></pre>
                 </div>
 
-                <h4 class="text-lg font-semibold text-gray-100 mt-6 mb-2">b. Configure Static IP Settings</h4>
                 <p class="text-gray-300">
                     In the opened <code>dhcpcd.conf</code> file, add the following lines.
                     Replace <code>wlan0</code> with <code>eth0</code> if you're using a wired connection:
@@ -480,14 +478,18 @@ static domain_name_servers=1.1.1.1</code></pre>
 
                 <ul class="list-disc list-inside text-gray-300">
                     <li><strong>interface wlan0:</strong> Specifies the network interface to configure. Use
-                        <code>wlan0</code> for wireless or <code>eth0</code> for wired connections.</li>
+                        <code>wlan0</code> for wireless or <code>eth0</code> for wired connections.
+                    </li>
                     <li><strong>static ip_address=192.168.178.2/24:</strong> Assigns the static IP address
                         <code>192.168.178.2</code> with a subnet mask of <code>255.255.255.0</code> (<code>/24</code> in
-                        CIDR notation) to your Raspberry Pi.</li>
+                        CIDR notation) to your Raspberry Pi.
+                    </li>
                     <li><strong>static routers=192.168.178.1:</strong> Sets the default gateway to
-                        <code>192.168.178.1</code>, typically your router's IP address.</li>
+                        <code>192.168.178.1</code>, typically your router's IP address.
+                    </li>
                     <li><strong>static domain_name_servers=1.1.1.1:</strong> Configures the DNS server to
-                        <code>1.1.1.1</code> (Cloudflare's public DNS) for name resolution.</li>
+                        <code>1.1.1.1</code> (Cloudflare's public DNS) for name resolution.
+                    </li>
                 </ul>
 
 
@@ -510,7 +512,7 @@ static domain_name_servers=1.1.1.1</code></pre>
                     <pre><code class="language-bash">sudo reboot</code></pre>
                 </div>
 
-                <h3 class="text-xl font-semibold text-gray-100 mt-6 mb-2">Step 3: Configure Your Router to Use Pi-Hole
+                <h3 class="text-large font-semibold text-gray-100 mt-6 mb-2">Step 3: Configure Your Router to Use Pi-Hole
                     as the DNS Server</h3>
                 <p class="text-gray-300">
                     After setting a static IP on your Raspberry Pi, you need to configure your router to use this IP as
@@ -533,7 +535,8 @@ static domain_name_servers=1.1.1.1</code></pre>
                     <li>Click <strong>Save</strong> to apply the changes.</li>
                 </ol>
                 <img src="img/routerDNSSettings.png" alt="Router DNS Settings" class="my-4 rounded-lg">
-                <p>And thats already it. Note that you should probably setup a firewall and ssh-connection for your pi.</p>
+                <p>And thats already it. Note that you should probably setup a firewall and ssh-connection for your pi.
+                </p>
 
 
             </div>
