@@ -421,7 +421,8 @@ docker-compose up -d</code></pre>
                 </ol>
                 <img src="img/dhcpRange.png" alt="DHCP Range Settings on Fritz!Box" class="my-4 rounded-lg">
 
-                <h3 class="text-large font-semibold text-gray-100 mt-6 mb-2">Step 2: Assign a Static IP to Your Raspberry
+                <h3 class="text-large font-semibold text-gray-100 mt-6 mb-2">Step 2: Assign a Static IP to Your
+                    Raspberry
                     Pi</h3>
                 <p class="text-gray-300">
                     With the DHCP range identified, choose an IP address for your Raspberry Pi that falls outside this
@@ -433,7 +434,7 @@ docker-compose up -d</code></pre>
                     <code>/etc/dhcpcd.conf</code> file:
                 </p>
 
-            
+
                 <p class="text-gray-300">
                     Open the <code>dhcpcd.conf</code> file with sudo privileges:
                 </p>
@@ -512,7 +513,25 @@ static domain_name_servers=1.1.1.1</code></pre>
                     <pre><code class="language-bash">sudo reboot</code></pre>
                 </div>
 
-                <h3 class="text-large font-semibold text-gray-100 mt-6 mb-2">Step 3: Configure Your Router to Use Pi-Hole
+
+                <p class="text-gray-300">
+                    In your Fritz!Box interface, navigate to <strong>Home Network</strong> &gt; <strong>Network</strong>
+                    &gt; <strong>Network Connections</strong>. Locate your Raspberry Pi in the list of connected devices
+                    and click on the edit button next to it. In the device settings, configure the Pi's IP address as
+                    static by entering the same IP address you set on your Pi (e.g., <code>192.168.178.2</code>).
+                    Additionally, ensure that the checkbox labeled <em>"Always assign the same IPv4 address to this
+                        network device"</em> is checked. This step guarantees that your Raspberry Pi retains the
+                    assigned static IP address, preventing any potential IP conflicts and ensuring consistent
+                    accessibility of Pi-Hole across your network.
+                </p>
+                <img src="img/staticIpFritzbox.png" />
+
+
+
+
+
+                <h3 class="text-large font-semibold text-gray-100 mt-6 mb-2">Step 3: Configure Your Router to Use
+                    Pi-Hole
                     as the DNS Server</h3>
                 <p class="text-gray-300">
                     After setting a static IP on your Raspberry Pi, you need to configure your router to use this IP as
